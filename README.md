@@ -1,4 +1,4 @@
-# LocalStack S3-Lambda-SQS Prototype
+# MiniStack S3-Lambda-SQS Prototype
 
 This project demonstrates a workflow using LocalStack (free version) to integrate S3, Lambda, and SQS.
 
@@ -51,3 +51,10 @@ The Lambda will print the extracted EXIF metadata from the image.
 ## Troubleshooting
 
 I created a ticket with Ministack to report the error I got with Lambda [Python module boto3 not found when invoking a Lambda function](https://github.com/ministackorg/ministack/issues/362?reload=1)
+
+## Resources
+
+* [Ministack blog](https://dev.to/nahuel990/free-localstack-alternative-20-aws-services-and-counting-4ob1)
+* [Ministack Github](https://github.com/ministackorg/ministack)
+* [Ministack website](https://ministack.org/)
+
