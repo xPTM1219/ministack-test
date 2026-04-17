@@ -1,0 +1,42 @@
+# services:
+#   ministack:
+#     image: ministackorg/ministack
+#     ports:
+#       - "4566:4566"
+#     volumes:
+#       - /var/run/docker.sock:/var/run/docker.sock
+#     environment:
+#       - REDIS_HOST=redis
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+
+
+services:
+  ministack:
+    image: ministackorg/ministack
+    ports:
+      - "4566:4566"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data/state:/tmp/ministack-state
+      - ./data/s3:/tmp/ministack-data/s3
+    environment:
+      - PERSIST_STATE=1
+      - S3_PERSIST=1
+      - RDS_PERSIST=1
+      - LOG_LEVEL=INFO
+      - LAMBDA_EXECUTOR=docker
+      - LAMBDA_DOCKER_NETWORK=ministack_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:4566/_ministack/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - ministack_network
+
+networks:
+  ministack_network:
+    # driver: bridge

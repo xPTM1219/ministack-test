@@ -1,0 +1,1 @@
+{"errorMessage": "sh: 1: cannot open /var/task/_event.json: No such file", "errorType": "Runtime.HandlerError"}

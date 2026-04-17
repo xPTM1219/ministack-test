@@ -1,0 +1,10 @@
+#!/bin/bash
+
+aws --endpoint-url=http://localhost:4566 s3 mb s3://test-bucket
+
+aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue
+
+zip lambda_function.zip lambda_function.py
+
+aws --endpoint-url=http://localhost:4566 lambda create-function --function-name DisplayMetadata --runtime python3.9 --role arn:aws:iam::000000000000:role/lambda-role --handler lambda_function.lambda_handler --zip-file fileb://lambda_function.zip
+
