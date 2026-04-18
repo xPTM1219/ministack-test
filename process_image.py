@@ -22,8 +22,8 @@ sqs = boto3.client(
 
 # Bucket and queue details
 bucket_name = 'test-bucket'
-object_key = 'tof-valkyrie.jpg'  # Assumes the uploaded image is named 'image.jpg'
-queue_url = 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/test-queue'
+object_key = 'image.jpg'  # Assumes the uploaded image is named 'image.jpg'
+queue_url = 'http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue'
 
 def extract_metadata():
     try:
@@ -35,27 +35,15 @@ def extract_metadata():
         # Open the image with PIL
         image = Image.open(BytesIO(image_data))
         image.load()
-
-        print("Image format:", image.format)
-        print("Size:", image.size)
-        print("All:", image.getdata())
-
-        # Extract EXIF metadata
-        exif_data = image._getexif()
-        exif = {}
         
-        if exif_data:
-            for tag_id, value in exif_data.items():
-                tag_name = Image.ExifTags.TAGS.get(tag_id, tag_id)
-                exif[tag_name] = value
-        print(exif)
-        if exif_data:
-            metadata = {Image.ExifTags.TAGS.get(k, k): v for k, v in exif_data.items()}
-        else:
-            metadata = {"message": "No EXIF data found"}
+        img_meta = {
+            "format": image.format,
+            "size": image.size
+        }
+        # print(img_meta)
 
-        exit()
-        return metadata
+        # exit()
+        return img_meta
 
     except Exception as e:
         return {"error": str(e)}

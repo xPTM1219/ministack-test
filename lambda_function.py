@@ -25,27 +25,54 @@ def lambda_handler(event, context):
         region_name='us-east-1'
     )
 
-    queue_url = 'http://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/test-queue'
+    queue_url = 'http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue'
 
     try:
         # Receive messages from SQS
-        response = sqs.receive_message(QueueUrl=queue_url, MaxNumberOfMessages=10)
+        # response = sqs.receive_message(
+        #     QueueUrl=queue_url,
+        #     AttributeNames=['All'],
+        #     MessageAttributeNames=[".*"],
+        #     MaxNumberOfMessages=10
+        # )
 
-        messages = response.get('Messages', [])
+        # messages = response.get('Messages', [])
 
-        if not messages:
-            print("No messages in the queue.")
-            return
+        # if not messages:
+        #     print("No messages in the queue.")
+        #     return
 
-        for message in messages:
+        for message in get_messages_from_queue(sqs, queue_url):
             message_body = json.loads(message['Body'])
             print("Received metadata:", json.dumps(message_body, indent=2))
 
             # Delete the message after processing
-            sqs.delete_message(
-                QueueUrl=queue_url,
-                ReceiptHandle=message['ReceiptHandle']
-            )
+            # sqs.delete_message(
+            #     QueueUrl=queue_url,
+            #     ReceiptHandle=message['ReceiptHandle']
+            # )
 
     except Exception as e:
         print(f"Error processing messages: {e}")
+
+def get_messages_from_queue(sqs, queue_url):
+    """
+    Generates messages from an SQS queue.
+    Note: this continues to generate messages until the queue is empty.
+    :param queue_url: URL of the SQS queue to drain.
+    """
+    while True:
+        resp = sqs.receive_message(
+            QueueUrl=queue_url,
+            AttributeNames=['All'],
+            MessageAttributeNames=[".*"],
+            MaxNumberOfMessages=10
+        )
+
+        try:
+            # returns an iterable object
+            # makes this function a generator function
+            yield from resp['Messages']
+        except KeyError:
+            print("Queue is empty")
+            return
