@@ -212,3 +212,4 @@ data/
 *.jpg
 *.png
 *.json
+node_modules/

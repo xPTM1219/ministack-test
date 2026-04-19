@@ -3,6 +3,16 @@
 This project demonstrates a workflow using Ministack to integrate different
 AWS services.
 
+## Structure
+
+As you can see now, the project is structured in various folders that contains
+AWS services. In each folder you will find different languages and
+implementations. Ministack configuration still remains in root.
+
+* Lambda - Deploys a lambda that reads SQS queue.
+* ECS - Deploys two services of Vuejs and Nginx with CDK. Typescript and Java.
+* EKS - Deploys a K8s cluster that host Apache and Alpine Linux nodes.
+
 ## Requirements
 
 * python-pip, if on Linux
