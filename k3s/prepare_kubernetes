@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# This script prepares Ministack with a Kubernetes "k3s" cluster.
+# 
+
+aws --endpoint-url=http://localhost:4566 eks create-cluster --name k3s-cluster --role-arn arn:aws:iam::000000000000:role/eks --resources-vpc-config subnetIds=subnet-test
+
+# Get the k3s kubeconfig (container name follows ministack-eks-{name} pattern)
+docker exec ministack-eks-k3s-cluster cat /etc/rancher/k3s/k3s.yaml | sed "s/127.0.0.1:6443/localhost:$(docker port ministack-eks-k3s-cluster 6443/tcp | cut -d: -f2)/" > ./ministack-kubeconfig.yaml
+
+export KUBECONFIG=/tmp/ministack-kubeconfig.yaml
+
+# Resources
+# https://github.com/ministackorg/ministack/#eks-with-real-kubernetes-k3s
