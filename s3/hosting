@@ -2,8 +2,15 @@
 
 # URL: http://cardio-planner.s3-website.localhost:4566/index.html
 
+# Remember to have the app compiled
+
+# Example
 aws s3 website s3://my-vue-app --index-document index.html --error-document index.html
-aws s3 website s3://cardio-planner-bucket --index-document index.html --error-document index.html
 aws s3api put-bucket-policy --bucket my-vue-app --policy file://bucket-policy.json
+
+# Cardio Planner app hosting
+aws --endpoint-url=http://localhost:4566 s3 mb s3://cardio-planner
+aws s3 website s3://cardio-planner --index-document index.html --error-document index.html
 aws --endpoint-url=http://localhost:4566 s3 cp assets s3://cardio-planner/cardio-planner/assets/ --recursive
 aws --endpoint-url=http://localhost:4566 s3 cp index.html s3://cardio-planner/index.html
+aws s3api put-bucket-policy --bucket cardio-planner --policy file://s3/bucket-policy.json
