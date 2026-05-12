@@ -13,4 +13,24 @@ aws --endpoint-url=http://localhost:4566 s3 mb s3://cardio-planner
 aws s3 website s3://cardio-planner --index-document index.html --error-document index.html
 aws --endpoint-url=http://localhost:4566 s3 cp assets s3://cardio-planner/cardio-planner/assets/ --recursive
 aws --endpoint-url=http://localhost:4566 s3 cp index.html s3://cardio-planner/index.html
+
+# Create policy
+tee s3/bucket-policy.json <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::cardio-planner/*"
+    }
+  ]
+}
+EOF
+
+# Set policy
 aws s3api put-bucket-policy --bucket cardio-planner --policy file://s3/bucket-policy.json
+
+
