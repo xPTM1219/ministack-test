@@ -1,0 +1,5 @@
+docker>=7.0.0
+pymongo
+pymongo[aws]
+hypercorn==0.18.0
+cbor2>=5.4.0
