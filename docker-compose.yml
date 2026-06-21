@@ -2,7 +2,8 @@ name: ministack
 services:
   ministack:
     # build: .
-    image: ministackorg/ministack:${MINISTACK_VERSION}
+    # image: ministackorg/ministack:${MINISTACK_VERSION}
+    image: ministack-docdb-test:1.1
     container_name: ministack
     ports:
       - "4566:4566"
