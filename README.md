@@ -45,7 +45,7 @@ implementations. Ministack configuration still remains in root.
    export AWS_ACCESS_KEY_ID=test
    export AWS_SECRET_ACCESS_KEY=test
    export AWS_REGION=us-east-1
-   export MINISTACK_VERSION=1.3.36
+   export MINISTACK_VERSION=1.4.9
 
    aws --endpoint-url=http://localhost:4566 s3 mb s3://test-bucket
    aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue
@@ -80,6 +80,52 @@ implementations. Ministack configuration still remains in root.
 4. The Lambda will print the extracted information in the terminal.
    Note that in the current status, the message is in base64,
    you need to decode it.
+
+## Mongo + API Gateway + Lambda Example
+
+This project now includes Lambdas that use API Gateway to insert/list docs in a local MongoDB.
+
+### Quick start for Mongo example
+
+1. Make sure docker compose includes mongo (added), run:
+   ```bash
+   ./prepare_ministack
+   ```
+   (or manually: docker compose up -d ; then the aws cli parts)
+
+   Mongo will be at localhost:27017 , db=ministackdb , collection=items
+
+2. The prepare script now also:
+   - Packages the Lambdas with pymongo
+   - Creates `InsertDocument` and `ListDocuments` functions (note: uses host.docker.internal for mongo conn from containerized Lambda)
+   - Creates a REST API "MongoApi" with POST/GET /items
+
+3. Invoke (replace $API_ID from script output):
+   ```bash
+   # Insert
+   curl -X POST http://$API_ID.execute-api.localhost:4566/dev/items \
+     -H "Content-Type: application/json" \
+     -d '{"title": "Hello Ministack", "tags": ["aws", "local"]}'
+
+   # List
+   curl http://$API_ID.execute-api.localhost:4566/dev/items
+   ```
+
+Alternative invoke path (no custom dns):
+   `curl http://localhost:4566/_aws/execute-api/$API_ID/dev/items`
+
+The Lambda code is in `lambda/insert_document.py` and `lambda/list_documents.py`
+
+You can test the mongo directly:
+   ```bash
+   python -c "
+   from pymongo import MongoClient
+   c = MongoClient('mongodb://localhost:27017/')
+   print(list(c.ministackdb.items.find()))
+   "
+   ```
+
+Note: If Lambda can't reach mongo, try changing MONGO_URI to 'mongodb://172.17.0.1:27017/' (docker host ip on linux) or run Lambda with LAMBDA_EXECUTOR=local.
 
 ## Troubleshooting
 

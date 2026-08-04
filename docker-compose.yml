@@ -42,6 +42,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
+     #restart: unless-stopped
+
+  mongo:
+    image: mongo:7
+    container_name: ministack-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=ministackdb
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    # volumes:
+    #   - ./data/mongo:/data/db
     #restart: unless-stopped
 
   # Optional: Postgres for RDS (always-on, no Docker-in-Docker needed)

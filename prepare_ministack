@@ -4,7 +4,7 @@
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_REGION=us-east-1
-export MINISTACK_VERSION=1.3.70
+export MINISTACK_VERSION=1.4.9-full
 export AWS_ENDPOINT_URL=http://localhost:4566
 
 # Spin up the services
@@ -20,6 +20,10 @@ aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queu
 
 #aws --endpoint-url=http://localhost:4566 lambda create-function --function-name DisplayMetadata --runtime python3.9 --role arn:aws:iam::000000000000:role/lambda-role --handler lambda_function.lambda_handler --zip-file fileb://lambda_function.zip
 
+# Ensure lambda execution role exists (ministack may allow without, but safe)
+aws --endpoint-url=${AWS_ENDPOINT_URL} iam create-role \
+  --role-name lambda-role \
+  --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}' || true
 
 aws --endpoint-url=${AWS_ENDPOINT_URL} docdb create-db-instance \
     --db-instance-identifier test-instance \
@@ -27,3 +31,100 @@ aws --endpoint-url=${AWS_ENDPOINT_URL} docdb create-db-instance \
     --engine docdb \
     --db-instance-class db.t3.medium \
     --availability-zone ${AWS_REGION}
+
+echo "Mongo is available directly on localhost:27017 (via docker service)"
+
+# === API Gateway + Mongo Lambdas setup ===
+LAMBDA_DIR="lambda"
+PKG_DIR="/tmp/lambda-pkg"
+mkdir -p "$PKG_DIR"
+
+# Build insert lambda zip (includes deps)
+echo "Packaging insert_document lambda..."
+rm -rf "$PKG_DIR"/*
+cp "$LAMBDA_DIR/insert_document.py" "$PKG_DIR/"
+pip install -q -r "$LAMBDA_DIR/requirements.txt" -t "$PKG_DIR" --upgrade
+(cd "$PKG_DIR" && zip -qr /tmp/insert_document.zip .)
+aws --endpoint-url=${AWS_ENDPOINT_URL} lambda create-function \
+    --function-name InsertDocument \
+    --runtime python3.12 \
+    --role arn:aws:iam::000000000000:role/lambda-role \
+    --handler insert_document.lambda_handler \
+    --zip-file fileb:///tmp/insert_document.zip \
+    --environment Variables="{MONGO_URI=mongodb://host.docker.internal:27017/,DB_NAME=ministackdb,COLLECTION_NAME=items}" || true
+
+# Build list lambda zip
+echo "Packaging list_documents lambda..."
+rm -rf "$PKG_DIR"/*
+cp "$LAMBDA_DIR/list_documents.py" "$PKG_DIR/"
+pip install -q -r "$LAMBDA_DIR/requirements.txt" -t "$PKG_DIR" --upgrade
+(cd "$PKG_DIR" && zip -qr /tmp/list_documents.zip .)
+aws --endpoint-url=${AWS_ENDPOINT_URL} lambda create-function \
+    --function-name ListDocuments \
+    --runtime python3.12 \
+    --role arn:aws:iam::000000000000:role/lambda-role \
+    --handler list_documents.lambda_handler \
+    --zip-file fileb:///tmp/list_documents.zip \
+    --environment Variables="{MONGO_URI=mongodb://host.docker.internal:27017/,DB_NAME=ministackdb,COLLECTION_NAME=items}" || true
+
+# Create REST API (API Gateway v1) for simplicity with proxy integration
+echo "Creating API Gateway..."
+API_ID=$(aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway create-rest-api \
+    --name "MongoApi" \
+    --description "API for Mongo insert/list via Lambda" \
+    --query 'id' --output text)
+
+# Get root resource id
+ROOT_ID=$(aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway get-resources \
+    --rest-api-id $API_ID --query 'items[?path==`/`].id' --output text)
+
+# Create /items resource
+ITEMS_ID=$(aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway create-resource \
+    --rest-api-id $API_ID --parent-id $ROOT_ID --path-part items \
+    --query 'id' --output text)
+
+# POST /items -> insert
+aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway put-method \
+    --rest-api-id $API_ID --resource-id $ITEMS_ID --http-method POST \
+    --authorization-type NONE
+
+aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway put-integration \
+    --rest-api-id $API_ID --resource-id $ITEMS_ID --http-method POST \
+    --type AWS_PROXY --integration-http-method POST \
+    --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:InsertDocument/invocations
+
+# GET /items -> list
+aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway put-method \
+    --rest-api-id $API_ID --resource-id $ITEMS_ID --http-method GET \
+    --authorization-type NONE
+
+aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway put-integration \
+    --rest-api-id $API_ID --resource-id $ITEMS_ID --http-method GET \
+    --type AWS_PROXY --integration-http-method POST \
+    --uri arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:000000000000:function:ListDocuments/invocations
+
+# Deploy
+aws --endpoint-url=${AWS_ENDPOINT_URL} apigateway create-deployment \
+    --rest-api-id $API_ID --stage-name dev
+
+# Grant API Gateway permission to invoke the Lambdas
+aws --endpoint-url=${AWS_ENDPOINT_URL} lambda add-permission \
+    --function-name InsertDocument \
+    --statement-id apigw-post \
+    --action lambda:InvokeFunction \
+    --principal apigateway.amazonaws.com \
+    --source-arn "arn:aws:execute-api:us-east-1:000000000000:$API_ID/*/POST/items" || true
+
+aws --endpoint-url=${AWS_ENDPOINT_URL} lambda add-permission \
+    --function-name ListDocuments \
+    --statement-id apigw-get \
+    --action lambda:InvokeFunction \
+    --principal apigateway.amazonaws.com \
+    --source-arn "arn:aws:execute-api:us-east-1:000000000000:$API_ID/*/GET/items" || true
+
+echo "API created: $API_ID"
+echo "Invoke insert: curl -X POST http://$API_ID.execute-api.localhost:4566/dev/items -d '{\"name\":\"test\",\"value\":42}' -H 'Content-Type: application/json'"
+echo "Invoke list:   curl http://$API_ID.execute-api.localhost:4566/dev/items"
+echo "Alternative path invoke: curl http://localhost:4566/_aws/execute-api/$API_ID/dev/items ..."
+
+rm -rf "$PKG_DIR"
