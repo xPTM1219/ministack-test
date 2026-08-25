@@ -14,7 +14,7 @@ import os
 client = docker.from_env()
 
 # client = docker.DockerClient(base_url='tcp://127.0.0.1')
-image = "mongo:5.0.32"
+image = "mongo:5.0.33"
 container_name = "mongo"
 container: str
 

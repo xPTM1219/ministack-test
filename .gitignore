@@ -213,3 +213,4 @@ data/
 *.png
 *.json
 node_modules/
+.kilo/
