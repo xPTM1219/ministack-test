@@ -82,14 +82,14 @@ and `AWS::SecretsManager::Secret`.
 
 ## Deploy + connect (ministack)
 
-> **Status:** ministack's CloudFormation engine does not yet provide
-> `AWS::DocDB::*` resource types, so `cloudformation deploy` of these templates
-> fails with `Unsupported resource type` today. The stacks are synth-verified;
-> see `.kilo/plans/ministack-docdb-cfn-plan.md` for the ministack change that
-> enables deployment. Until then, use the direct-API path below to get an
-> equivalent cluster up and run the tests.
+> **Status:** ministack's CloudFormation engine provisions `AWS::DocDB::*`
+> resource types with **real mongo containers** (image `ministack-docdb:cfn-docdb`
+> and newer). CDK L2's `{{resolve:secretsmanager:...}}` dynamic references for
+> `MasterUsername`/`MasterUserPassword` resolve at deploy time, so
+> `cloudformation deploy` of these templates works end-to-end (Path A below).
+> The direct-API path (Path B) still works as a fallback.
 
-### Path A — CloudFormation deploy (after the ministack CFN providers land)
+### Path A — CloudFormation deploy
 
 ```bash
 aws --endpoint-url=$AWS_ENDPOINT_URL cloudformation deploy \
@@ -99,12 +99,17 @@ aws --endpoint-url=$AWS_ENDPOINT_URL cloudformation deploy \
 aws --endpoint-url=$AWS_ENDPOINT_URL cloudformation describe-stacks \
     --stack-name DocdbCdk --query 'Stacks[0].Outputs'
 
-SECRET_ARN=$(aws --endpoint-url=$AWS_ENDPOINT_URL docdb describe-db-clusters \
-    --query 'DBClusters[0].MasterUserSecret.SecretArn' --output text)
+SECRET_ID=$(aws --endpoint-url=$AWS_ENDPOINT_URL secretsmanager list-secrets \
+    --query 'SecretList[?contains(Name, `DocdbClusterSecret`)].[Name]' \
+    --output text | head -1)
 PASSWORD=$(aws --endpoint-url=$AWS_ENDPOINT_URL secretsmanager get-secret-value \
-    --secret-id "$SECRET_ARN" --query SecretString --output text | jq -r .password)
+    --secret-id "$SECRET_ID" --query SecretString --output text | jq -r .password)
 
-export MONGO_URI="mongodb://docdbadmin:${PASSWORD}@localhost:27017"
+# The endpoint address in the outputs is cosmetic; connect to the mongo
+# container directly (docker inspect <container> for its IP on the compose
+# network). Generated passwords can contain URI-special characters — encode:
+#   python3 -c "import urllib.parse,sys; print(urllib.parse.quote_plus(sys.argv[1]))" "$PASSWORD"
+export MONGO_URI="mongodb://docdbadmin:${PASSWORD}@<mongo-container-ip>:27017"
 ```
 
 ### Path B — direct docdb API (works today)
