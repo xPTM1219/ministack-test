@@ -33,4 +33,11 @@ EOF
 # Set policy
 aws s3api put-bucket-policy --bucket cardio-planner --policy file://s3/bucket-policy.json
 
+# Weather App hosting (bucket `vue-app` already exists with its
+# public-read policy — only the website config and the upload remain)
+# URL: http://vue-app.s3-website.localhost:4566/index.html#/
+aws --endpoint-url=http://localhost:4566 s3 website s3://vue-app \
+    --index-document index.html --error-document index.html
+aws --endpoint-url=http://localhost:4566 s3 cp s3/frontend/dist/ s3://vue-app/ --recursive
+
 

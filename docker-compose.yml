@@ -2,9 +2,9 @@ name: ministack
 services:
   ministack:
     # build: .
-    # image: ministackorg/ministack:${MINISTACK_VERSION}
+    image: ministackorg/ministack:${MINISTACK_VERSION}
     # image: ministackorg/ministack-docdb
-    image: ministack-docdb:cfn-docdb
+    # image: ministack-docdb:cfn-docdb
     # image: ministack-docdb-test:1.1
     container_name: ministack
     ports:
@@ -58,9 +58,9 @@ services:
   #     interval: 5s
   #     timeout: 3s
   #     retries: 5
-    # volumes:
-    #   - ./data/mongo:/data/db
-    #restart: unless-stopped
+  #   volumes:
+  #     - ./data/mongo:/data/db
+  #restart: unless-stopped
 
   # Optional: Postgres for RDS (always-on, no Docker-in-Docker needed)
   # Uncomment to have a persistent Postgres available at localhost:5432

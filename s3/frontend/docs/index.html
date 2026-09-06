@@ -1,0 +1,128 @@
+<!DOCTYPE html><html class="default" lang="en" data-base="."><head><meta charset="utf-8"/><meta http-equiv="x-ua-compatible" content="IE=edge"/><title>frontend-weather-app - v0.1.0</title><meta name="description" content="Documentation for frontend-weather-app"/><meta name="viewport" content="width=device-width, initial-scale=1"/><link rel="stylesheet" href="assets/style.css"/><link rel="stylesheet" href="assets/highlight.css"/><script defer src="assets/main.js"></script><script async src="assets/icons.js" id="tsd-icons-script"></script><script async src="assets/search.js" id="tsd-search-script"></script><script async src="assets/navigation.js" id="tsd-nav-script"></script></head><body><script>document.documentElement.dataset.theme = localStorage.getItem("tsd-theme") || "os";document.body.style.display="none";setTimeout(() => app?app.showPage():document.body.style.removeProperty("display"),500)</script><header class="tsd-page-toolbar"><div class="tsd-toolbar-contents container"><div class="table-cell" id="tsd-search"><div class="field"><label for="tsd-search-field" class="tsd-widget tsd-toolbar-icon search no-caption"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-search"></use></svg></label><input type="text" id="tsd-search-field" aria-label="Search"/></div><div class="field"><div id="tsd-toolbar-links"></div></div><ul class="results"><li class="state loading">Preparing search index...</li><li class="state failure">The search index is not available</li></ul><a href="index.html" class="title">frontend-weather-app - v0.1.0</a></div><div class="table-cell" id="tsd-widgets"><a href="#" class="tsd-widget tsd-toolbar-icon menu no-caption" data-toggle="menu" aria-label="Menu"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-menu"></use></svg></a></div></div></header><div class="container container-main"><div class="col-content"><div class="tsd-page-title"><h1>frontend-weather-app - v0.1.0</h1></div><div class="tsd-panel tsd-typography"><a id="ministack-s3-lambda-sqs-prototype" class="tsd-anchor"></a><h1 class="tsd-anchor-link">MiniStack S3-Lambda-SQS Prototype<a href="#ministack-s3-lambda-sqs-prototype" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h1><p>This project demonstrates a workflow using Ministack to integrate different
+AWS services.</p>
+<a id="structure" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Structure<a href="#structure" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>As you can see now, the project is structured in various folders that contains
+AWS services. In each folder you will find different languages and
+implementations. Ministack configuration still remains in root.</p>
+<ul>
+<li>Lambda - Deploys a lambda that reads SQS queue.</li>
+<li>ECS - Deploys two services of Vuejs and Nginx with CDK. Typescript and Java.</li>
+<li>EKS - Deploys a K8s cluster that host Apache and Alpine Linux nodes.</li>
+</ul>
+<a id="requirements" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Requirements<a href="#requirements" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li>python-pip, if on Linux</li>
+<li>zip or 7zip or WinRAR</li>
+<li>Activate the environment
+<ul>
+<li><code>source venv/bin/activate</code> if using Bash</li>
+<li><code>source venv/bin/activate.fish</code> if usinf Fish</li>
+<li><code>venv\Scripts\activate.ps1</code> if usng Windows</li>
+</ul>
+</li>
+<li>Python dependencies
+<ul>
+<li>Create virtual environment <code>python3 -m virtualenv venv</code></li>
+<li><code>pip3 install -r requirements</code></li>
+</ul>
+</li>
+<li>AWS CLI v2
+<ul>
+<li>See their <a href="https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html">docs</a></li>
+</ul>
+</li>
+</ul>
+<a id="setup" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Setup<a href="#setup" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>
+<p>Start Ministack:</p>
+<pre><code class="bash"><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">run</span><span class="hl-1"> </span><span class="hl-3">--rm</span><span class="hl-1"> </span><span class="hl-3">-d</span><span class="hl-1"> </span><span class="hl-3">--name</span><span class="hl-1"> </span><span class="hl-2">ministack</span><span class="hl-1"> </span><span class="hl-3">-p</span><span class="hl-1"> </span><span class="hl-2">4566:4566</span><span class="hl-1"> </span><span class="hl-3">-p</span><span class="hl-1"> </span><span class="hl-2">4572:4572</span><span class="hl-1"> </span><span class="hl-2">ministackorg/ministack</span>
+</code><button type="button">Copy</button></pre>
+
+<p>or use the docker compose file</p>
+<pre><code class="bash"><span class="hl-0">docker</span><span class="hl-1"> </span><span class="hl-2">compose</span><span class="hl-1"> </span><span class="hl-2">up</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>
+<p>Create resources:</p>
+<pre><code class="bash"><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-4">AWS_ACCESS_KEY_ID</span><span class="hl-1">=</span><span class="hl-4">test</span><br/><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-4">AWS_SECRET_ACCESS_KEY</span><span class="hl-1">=</span><span class="hl-4">test</span><br/><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-4">AWS_REGION</span><span class="hl-1">=</span><span class="hl-4">us-east-1</span><br/><span class="hl-3">export</span><span class="hl-1"> </span><span class="hl-4">MINISTACK_VERSION</span><span class="hl-1">=</span><span class="hl-5">1.4.9</span><br/><br/><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">s3</span><span class="hl-1"> </span><span class="hl-2">mb</span><span class="hl-1"> </span><span class="hl-2">s3://test-bucket</span><br/><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">sqs</span><span class="hl-1"> </span><span class="hl-2">create-queue</span><span class="hl-1"> </span><span class="hl-3">--queue-name</span><span class="hl-1"> </span><span class="hl-2">test-queue</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>
+<p>Create Lambda function:</p>
+<pre><code class="bash"><span class="hl-0">zip</span><span class="hl-1"> </span><span class="hl-2">lambda_function.zip</span><span class="hl-1"> </span><span class="hl-2">lambda_function.py</span><br/><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">lambda</span><span class="hl-1"> </span><span class="hl-2">create-function</span><span class="hl-1"> </span><span class="hl-3">--function-name</span><span class="hl-1"> </span><span class="hl-2">DisplayMetadata</span><span class="hl-1"> </span><span class="hl-3">--runtime</span><span class="hl-1"> </span><span class="hl-2">python3.9</span><span class="hl-1"> </span><span class="hl-3">--role</span><span class="hl-1"> </span><span class="hl-2">arn:aws:iam::000000000000:role/lambda-role</span><span class="hl-1"> </span><span class="hl-3">--handler</span><span class="hl-1"> </span><span class="hl-2">lambda_function.lambda_handler</span><span class="hl-1"> </span><span class="hl-3">--zip-file</span><span class="hl-1"> </span><span class="hl-2">fileb://lambda_function.zip</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+</ol>
+<a id="workflow" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Workflow<a href="#workflow" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>
+<p>Upload an image to S3:</p>
+<pre><code class="bash"><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">s3</span><span class="hl-1"> </span><span class="hl-2">cp</span><span class="hl-1"> </span><span class="hl-2">path/to/your/image.jpg</span><span class="hl-1"> </span><span class="hl-2">s3://test-bucket/image.jpg</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>
+<p>Run the Python script to extract metadata and send to SQS:</p>
+<pre><code class="bash"><span class="hl-6"># Process the image</span><br/><span class="hl-0">python</span><span class="hl-1"> </span><span class="hl-2">process_image.py</span><br/><br/><span class="hl-6"># Check if the queue is populated</span><br/><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">sqs</span><span class="hl-1"> </span><span class="hl-2">receive-message</span><span class="hl-1"> </span><span class="hl-3">--queue-url</span><span class="hl-1"> </span><span class="hl-2">http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>
+<p>Invoke the Lambda function to poll SQS and display metadata:</p>
+<pre><code class="bash"><span class="hl-0">aws</span><span class="hl-1"> </span><span class="hl-3">--endpoint-url=http://localhost:4566</span><span class="hl-1"> </span><span class="hl-2">lambda</span><span class="hl-1"> </span><span class="hl-2">invoke</span><span class="hl-1"> </span><span class="hl-3">--function-name</span><span class="hl-1"> </span><span class="hl-2">DisplayMetadata</span><span class="hl-1"> </span><span class="hl-2">output.json</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+<li>
+<p>The Lambda will print the extracted information in the terminal.
+Note that in the current status, the message is in base64,
+you need to decode it.</p>
+</li>
+</ol>
+<a id="mongo--api-gateway--lambda-example" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Mongo + API Gateway + Lambda Example<a href="#mongo--api-gateway--lambda-example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><p>This project now includes Lambdas that use API Gateway to insert/list docs in a local MongoDB.</p>
+<a id="quick-start-for-mongo-example" class="tsd-anchor"></a><h3 class="tsd-anchor-link">Quick start for Mongo example<a href="#quick-start-for-mongo-example" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h3><ol>
+<li>
+<p>Make sure docker compose includes mongo (added), run:</p>
+<pre><code class="bash"><span class="hl-0">./prepare_ministack</span>
+</code><button type="button">Copy</button></pre>
+
+<p>(or manually: docker compose up -d ; then the aws cli parts)</p>
+<p>Mongo will be at localhost:27017 , db=ministackdb , collection=items</p>
+</li>
+<li>
+<p>The prepare script now also:</p>
+<ul>
+<li>Packages the Lambdas with pymongo</li>
+<li>Creates <code>InsertDocument</code> and <code>ListDocuments</code> functions (note: uses host.docker.internal for mongo conn from containerized Lambda)</li>
+<li>Creates a REST API &quot;MongoApi&quot; with POST/GET /items</li>
+</ul>
+</li>
+<li>
+<p>Invoke (replace $API_ID from script output):</p>
+<pre><code class="bash"><span class="hl-6"># Insert</span><br/><span class="hl-0">curl</span><span class="hl-1"> </span><span class="hl-3">-X</span><span class="hl-1"> </span><span class="hl-2">POST</span><span class="hl-1"> </span><span class="hl-2">http://</span><span class="hl-4">$API_ID</span><span class="hl-2">.execute-api.localhost:4566/dev/items</span><span class="hl-1"> </span><span class="hl-7">\</span><br/><span class="hl-1">  </span><span class="hl-3">-H</span><span class="hl-1"> </span><span class="hl-2">&quot;Content-Type: application/json&quot;</span><span class="hl-1"> </span><span class="hl-7">\</span><br/><span class="hl-1">  </span><span class="hl-3">-d</span><span class="hl-1"> </span><span class="hl-2">&#39;{&quot;title&quot;: &quot;Hello Ministack&quot;, &quot;tags&quot;: [&quot;aws&quot;, &quot;local&quot;]}&#39;</span><br/><br/><span class="hl-6"># List</span><br/><span class="hl-0">curl</span><span class="hl-1"> </span><span class="hl-2">http://</span><span class="hl-4">$API_ID</span><span class="hl-2">.execute-api.localhost:4566/dev/items</span>
+</code><button type="button">Copy</button></pre>
+
+</li>
+</ol>
+<p>Alternative invoke path (no custom dns):
+<code>curl http://localhost:4566/_aws/execute-api/$API_ID/dev/items</code></p>
+<p>The Lambda code is in <code>lambda/insert_document.py</code> and <code>lambda/list_documents.py</code></p>
+<p>You can test the mongo directly:</p>
+<pre><code class="bash"><span class="hl-0">python</span><span class="hl-1"> </span><span class="hl-3">-c</span><span class="hl-1"> </span><span class="hl-2">&quot;</span><br/><span class="hl-2">from pymongo import MongoClient</span><br/><span class="hl-2">c = MongoClient(&#39;mongodb://localhost:27017/&#39;)</span><br/><span class="hl-2">print(list(c.ministackdb.items.find()))</span><br/><span class="hl-2">&quot;</span>
+</code><button type="button">Copy</button></pre>
+
+<p>Note: If Lambda can't reach mongo, try changing MONGO_URI to 'mongodb://172.17.0.1:27017/' (docker host ip on linux) or run Lambda with LAMBDA_EXECUTOR=local.</p>
+<a id="troubleshooting" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Troubleshooting<a href="#troubleshooting" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ol>
+<li>I created a ticket with Ministack to report the error I got with Lambda <a href="https://github.com/ministackorg/ministack/issues/362?reload=1">Python module boto3 not found when invoking a Lambda function</a>
+<ul>
+<li>The ticket was resolved the next morning.</li>
+</ul>
+</li>
+<li></li>
+</ol>
+<a id="resources" class="tsd-anchor"></a><h2 class="tsd-anchor-link">Resources<a href="#resources" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="assets/icons.svg#icon-anchor"></use></svg></a></h2><ul>
+<li><a href="https://dev.to/nahuel990/free-Ministack-alternative-20-aws-services-and-counting-4ob1">Ministack blog</a></li>
+<li><a href="https://github.com/ministackorg/ministack">Ministack Github</a></li>
+<li><a href="https://ministack.org/">Ministack website</a></li>
+</ul>
+</div></div><div class="col-sidebar"><div class="page-menu"><div class="tsd-navigation settings"><details class="tsd-accordion"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>Settings</h3></summary><div class="tsd-accordion-details"><div class="tsd-filter-visibility"><span class="settings-label">Member Visibility</span><ul id="tsd-filter-options"><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-protected" name="protected"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Protected</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-inherited" name="inherited" checked/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>Inherited</span></label></li><li class="tsd-filter-item"><label class="tsd-filter-input"><input type="checkbox" id="tsd-filter-external" name="external"/><svg width="32" height="32" viewBox="0 0 32 32" aria-hidden="true"><rect class="tsd-checkbox-background" width="30" height="30" x="1" y="1" rx="6" fill="none"></rect><path class="tsd-checkbox-checkmark" d="M8.35422 16.8214L13.2143 21.75L24.6458 10.25" stroke="none" stroke-width="3.5" stroke-linejoin="round" fill="none"></path></svg><span>External</span></label></li></ul></div><div class="tsd-theme-toggle"><label class="settings-label" for="tsd-theme">Theme</label><select id="tsd-theme"><option value="os">OS</option><option value="light">Light</option><option value="dark">Dark</option></select></div></div></details></div><details open class="tsd-accordion tsd-page-navigation"><summary class="tsd-accordion-summary"><h3><svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><use href="assets/icons.svg#icon-chevronDown"></use></svg>On This Page</h3></summary><div class="tsd-accordion-details"><a href="#ministack-s3-lambda-sqs-prototype"><span>Mini<wbr/>Stack <wbr/>S3-<wbr/>Lambda-<wbr/>SQS <wbr/>Prototype</span></a><ul><li><a href="#structure"><span>Structure</span></a></li><li><a href="#requirements"><span>Requirements</span></a></li><li><a href="#setup"><span>Setup</span></a></li><li><a href="#workflow"><span>Workflow</span></a></li><li><a href="#mongo--api-gateway--lambda-example"><span>Mongo + API <wbr/>Gateway + <wbr/>Lambda <wbr/>Example</span></a></li><li><ul><li><a href="#quick-start-for-mongo-example"><span>Quick start for <wbr/>Mongo example</span></a></li></ul></li><li><a href="#troubleshooting"><span>Troubleshooting</span></a></li><li><a href="#resources"><span>Resources</span></a></li></ul></div></details></div><div class="site-menu"><nav class="tsd-navigation"><a href="modules.html">frontend-weather-app - v0.1.0</a><ul class="tsd-small-nested-navigation" id="tsd-nav-container"><li>Loading...</li></ul></nav></div></div></div><footer><p class="tsd-generator">Generated using <a href="https://typedoc.org/" target="_blank">TypeDoc</a></p></footer><div class="overlay"></div></body></html>
