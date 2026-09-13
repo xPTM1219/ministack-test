@@ -2,9 +2,9 @@ name: ministack
 services:
   ministack:
     # build: .
-    image: ministackorg/ministack:${MINISTACK_VERSION}
+    # image: ministackorg/ministack:${MINISTACK_VERSION}
     # image: ministackorg/ministack-docdb
-    # image: ministack-docdb:cfn-docdb
+    image: ministack-docdb:cfn-docdb
     # image: ministack-docdb-test:1.1
     container_name: ministack
     ports:
