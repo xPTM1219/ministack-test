@@ -22,7 +22,7 @@ sqs = boto3.client(
 
 # Bucket and queue details
 bucket_name = 'test-bucket'
-object_key = 'image.jpg'  # Assumes the uploaded image is named 'image.jpg'
+object_key = 'image.png'  # Assumes the uploaded image is named 'image.jpg'
 queue_url = 'http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue'
 
 def extract_metadata():

@@ -2,9 +2,9 @@ name: ministack
 services:
   ministack:
     # build: .
-    # image: ministackorg/ministack:${MINISTACK_VERSION}
+    image: ministackorg/ministack:${MINISTACK_VERSION}
     # image: ministackorg/ministack-docdb
-    image: ministack-docdb:cfn-docdb
+    # image: ministack-docdb:cfn-docdb
     # image: ministack-docdb-test:1.1
     container_name: ministack
     ports:
@@ -19,6 +19,10 @@ services:
       - ELASTICACHE_BASE_PORT=16379
       - PERSIST_STATE=1
       - RDS_PERSIST=1
+      # Put Lambda RIE containers on the same Docker network as this
+      # container, otherwise inter-network isolation blocks the RIE
+      # HTTP call from inside ministack (DinD mode).
+      - LAMBDA_DOCKER_NETWORK=ministack_default
     volumes:
       - ./data/s3:/tmp/ministack-data/s3
       - ./data/state:/tmp/ministack-state
