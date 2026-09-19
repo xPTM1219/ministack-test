@@ -4,7 +4,7 @@
 export AWS_ACCESS_KEY_ID=test
 export AWS_SECRET_ACCESS_KEY=test
 export AWS_REGION=us-east-1
-export MINISTACK_VERSION=1.5.6-full
+export MINISTACK_VERSION=1.5.13-full
 export AWS_ENDPOINT_URL=http://localhost:4566
 
 # Spin up the services
@@ -16,14 +16,40 @@ aws --endpoint-url=http://localhost:4566 s3 mb s3://test-bucket
 aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue
 
 # Lambdas
-#zip lambda_function.zip lambda_function.py
+zip lambda_function.zip lambda_function.py
 
-#aws --endpoint-url=http://localhost:4566 lambda create-function --function-name DisplayMetadata --runtime python3.9 --role arn:aws:iam::000000000000:role/lambda-role --handler lambda_function.lambda_handler --zip-file fileb://lambda_function.zip
+aws --endpoint-url=http://localhost:4566 lambda create-function --function-name DisplayMetadata --runtime python3.9 --role arn:aws:iam::000000000000:role/lambda-role --handler lambda_function.lambda_handler --zip-file fileb://lambda_function.zip
 
 # Ensure lambda execution role exists (ministack may allow without, but safe)
 aws --endpoint-url=${AWS_ENDPOINT_URL} iam create-role \
   --role-name lambda-role \
   --assume-role-policy-document '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"Service":"lambda.amazonaws.com"},"Action":"sts:AssumeRole"}]}' || true
+
+# === Java lambda (GetQueue) setup ===
+# Build the shaded jar and upload it exploded (classes at zip root).
+# Requires: cd lambda/get_queue && mvn -q package
+JAR=lambda/get_queue/target/get-queue-lambda-0.1.jar
+if [ -f "$JAR" ]; then
+  rm -rf /tmp/java-lambda-pkg && mkdir -p /tmp/java-lambda-pkg
+  unzip -q "$JAR" -d /tmp/java-lambda-pkg
+  (cd /tmp/java-lambda-pkg && zip -qr /tmp/java_get_queue.zip .)
+  # SQS_ENDPOINT_URL must point at ministack from inside the lambda
+  # container: host.docker.internal, not localhost, no typos.
+  aws --endpoint-url=${AWS_ENDPOINT_URL} lambda create-function \
+      --function-name JavaGetQueue \
+      --runtime java21 \
+      --role arn:aws:iam::000000000000:role/lambda-role \
+      --handler org.xptm.GetQueueHandler::handleRequest \
+      --zip-file fileb:///tmp/java_get_queue.zip \
+      --timeout 60 --memory-size 1024 \
+      --environment Variables="{SQS_ENDPOINT_URL=http://host.docker.internal:4566,QUEUE_URL=http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue,MAX_MESSAGES=50}" || true
+fi
+
+# Invoke the function
+aws --endpoint-url=${AWS_ENDPOINT_URL} lambda invoke --function-name PythonGetQueue --region ${AWS_REGION} --log-type Tail response.json | jq -r '.LogResult' | base64 -d
+
+# If the lambda does not cooparate, verify that the queue is there
+aws --endpoint-url=${AWS_ENDPOINT_URL} sqs receive-message --queue-url http://sqs.us-east-1.localhost.ministack.cloud:4566/000000000000/test-queue
 
 aws --endpoint-url=${AWS_ENDPOINT_URL} docdb create-db-instance \
     --db-instance-identifier test-instance \
