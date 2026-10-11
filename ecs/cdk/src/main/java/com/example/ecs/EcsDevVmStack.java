@@ -18,6 +18,8 @@ import software.amazon.awscdk.services.ec2.SecurityGroup;
 import software.amazon.awscdk.services.ec2.SubnetSelection;
 import software.amazon.awscdk.services.ec2.Vpc;
 import software.amazon.awscdk.services.ec2.VpcAttributes;
+import software.amazon.awscdk.services.ecr.IRepository;
+import software.amazon.awscdk.services.ecr.Repository;
 import software.amazon.awscdk.services.ecs.Cluster;
 import software.amazon.awscdk.services.ecs.ContainerDefinition;
 import software.amazon.awscdk.services.ecs.ContainerDefinitionOptions;
@@ -65,6 +67,9 @@ import software.amazon.awscdk.services.ssm.StringParameter;
  *
  * AWS mode: adds EFS (mount targets + access point, uid 1000) and an
  * internet-facing NLB (optional EIP allocation ids) for a stable SSH target.
+ * The task gets a public IP when DEV_ASSIGN_PUBLIC_IP is truthy (no NAT
+ * needed); an ECR image URI grants the execution role pull rights on the
+ * referenced repository.
  */
 public class EcsDevVmStack extends Stack {
 
@@ -108,9 +113,17 @@ public class EcsDevVmStack extends Stack {
                     "DEV_VPC_ID and DEV_SUBNET_IDS are required (comma-separated lists allowed)");
         }
         List<String> subnets = csv(subnetIds);
+        if (!ministack && publicSubnetIds.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "AWS mode requires DEV_PUBLIC_SUBNET_IDS "
+                    + "(public subnet ids for the internet-facing NLB)");
+        }
+        // AZ labels are only used to pick subnet placement; derive them from
+        // the resolved region instead of hardcoding us-east-1.
+        final String region = this.getRegion();
         List<String> azs = new ArrayList<>();
         for (int i = 0; i < subnets.size(); i++) {
-            azs.add("us-east-1" + (char) ('a' + (i % 26)));
+            azs.add(region + (char) ('a' + (i % 26)));
         }
 
         IVpc vpc = Vpc.fromVpcAttributes(this, "ImportedVpc", VpcAttributes.builder()
@@ -233,6 +246,15 @@ public class EcsDevVmStack extends Stack {
         // the host security module only grants to privileged containers.
         // Fargate forbids privileged — this stays MiniStack-only.
         boolean privileged = ministack;
+        // An ECR image URI in AWS mode: the execution role is created
+        // explicitly, so CDK grants nothing automatically and Fargate would
+        // fail with CannotPullContainerError. grantPull covers
+        // ecr:GetAuthorizationToken plus the layer/image reads.
+        if (!ministack && image.contains(".dkr.ecr.")) {
+            IRepository ecrRepo = Repository.fromRepositoryName(
+                    this, "DevVmEcrRepo", ecrRepoName(image));
+            ecrRepo.grantPull(executionRole);
+        }
         ContainerDefinitionOptions containerOpts = ContainerDefinitionOptions.builder()
                 .containerName("devvm")
                 .image(ContainerImage.fromRegistry(image))
@@ -285,7 +307,9 @@ public class EcsDevVmStack extends Stack {
                 .serviceName("devvm-" + user)
                 .taskDefinition(td)
                 .desiredCount(1)
-                .assignPublicIp(false)
+                .assignPublicIp(ministack
+                        ? false
+                        : isTruthy(env("DEV_ASSIGN_PUBLIC_IP", "false")))
                 .vpcSubnets(SubnetSelection.builder().subnets(vpc.getPrivateSubnets()).build())
                 .securityGroups(serviceSgs)
                 .enableExecuteCommand(true)
@@ -356,6 +380,17 @@ public class EcsDevVmStack extends Stack {
 
     private static boolean isTruthy(String s) {
         return "1".equals(s) || "true".equalsIgnoreCase(s);
+    }
+
+    /**
+     * Extracts the repository name from an ECR image URI of the form
+     * <account>.dkr.ecr.<region>.amazonaws.com/<repo>[:<tag>]. Repository
+     * names may contain slashes, so the tag is cut at the last colon only.
+     */
+    private static String ecrRepoName(String imageUri) {
+        String path = imageUri.substring(imageUri.indexOf('/') + 1);
+        int colon = path.lastIndexOf(':');
+        return colon < 0 ? path : path.substring(0, colon);
     }
 
     private static String env(String name, String def) {

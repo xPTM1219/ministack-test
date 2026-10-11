@@ -41,6 +41,12 @@ run "hello-world in nested docker" $SSH "docker run --rm hello-world"
 # 4. home volume write/read (persistence is proven separately by ecs_vm.py)
 run "home write/read" $SSH "echo test-acceptance > ~/acceptance.txt; grep -q test-acceptance ~/acceptance.txt"
 
+# 5. pinned dev tools (version flags are best-effort; presence is the check)
+run "node + npm" $SSH "node -v && npm -v"
+run "kilo present" $SSH "command -v kilo && kilo --version"
+run "termide present" $SSH "command -v termide && termide --version"
+run "herdr present" $SSH "command -v herdr && herdr --version"
+
 echo
 echo "acceptance: $pass passed, $fail failed"
 exit $((fail > 0))

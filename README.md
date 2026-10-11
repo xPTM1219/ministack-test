@@ -45,7 +45,7 @@ implementations. Ministack configuration still remains in root.
    export AWS_ACCESS_KEY_ID=test
    export AWS_SECRET_ACCESS_KEY=test
    export AWS_REGION=us-east-1
-   export MINISTACK_VERSION=1.4.9
+   export MINISTACK_VERSION=1.5.25-full
 
    aws --endpoint-url=http://localhost:4566 s3 mb s3://test-bucket
    aws --endpoint-url=http://localhost:4566 sqs create-queue --queue-name test-queue
