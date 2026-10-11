@@ -5,6 +5,7 @@ Works against MiniStack (default) or real AWS (export AWS_ENDPOINT_URL
 unset and standard AWS creds). Subcommands:
 
     status              cluster/service/task summary incl. task private IP
+                        and the NLB DNS name when deployed on real AWS
     ssh                 print (or run with --) the SSH command to the task IP
     start               set desired-count 1 and wait for a running task
     stop                set desired-count 0 (home volume data is preserved)
@@ -81,7 +82,31 @@ def get_service():
     return svcs[0] if svcs else None
 
 
+def nlb_dns():
+    """Returns the stack's NlbDnsName output, or None when absent.
+
+    AWS mode adds an internet-facing NLB with a stable SSH DNS name;
+    the MiniStack-mode template has no NLB output, so the lookup simply
+    misses there.
+    """
+    try:
+        client_kwargs = dict(region_name=REGION, config=_config)
+        if ENDPOINT:
+            client_kwargs["endpoint_url"] = ENDPOINT
+        cfn = _session().client("cloudformation", **client_kwargs)
+        stacks = cfn.describe_stacks(
+            StackName=f"ecs-dev-{DEV_USER}").get("Stacks") or []
+        outputs = (stacks[0].get("Outputs") or []) if stacks else []
+        for out in outputs:
+            if out.get("OutputKey") == "NlbDnsName":
+                return out.get("OutputValue")
+    except Exception:
+        return None
+    return None
+
+
 def cmd_status(_args):
+    """Print cluster/service/task summary, task IP and NLB DNS (AWS)."""
     svc = get_service()
     if not svc:
         print(f"service {CLUSTER}/{SERVICE}: NOT FOUND")
@@ -90,6 +115,9 @@ def cmd_status(_args):
         f"service {CLUSTER}/{SERVICE}: {svc['status']} "
         f"desired={svc.get('desiredCount')} running={svc.get('runningCount')}"
     )
+    dns = nlb_dns()
+    if dns:
+        print(f"nlb: {dns} (stable SSH target)")
     tasks = find_tasks()
     if not tasks:
         print("tasks: none")
